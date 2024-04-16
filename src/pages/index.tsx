@@ -1,5 +1,6 @@
 import { HomeContainer, Product } from "@/styles/pages/home";
 import Image from "next/image";
+import Head from "next/head";
 
 import { stripe } from "@/lib/stripe";
 import { GetStaticProps } from "next";
@@ -14,7 +15,7 @@ interface HomeProps {
     id: string,
     name: string,
     imageUrl: string,
-    price: number,
+    price: string,
   }[]
 }
 
@@ -27,10 +28,15 @@ export default function Home({products}: HomeProps) {
   })
 
   return (
-    <HomeContainer ref={sliderRef} className="keen-slider">
+    <>
+      <Head>
+        <title>Home | Ignaite Shop</title>
+      </Head>
+
+      <HomeContainer ref={sliderRef} className="keen-slider">
       {products.map((product) => {
         return (
-      <Link  key={product.id}  href={`/product/${product.id}`}  >
+      <Link  key={product.id}  href={`/product/${product.id}`} prefetch={false}  >
         <Product className="keen-slider__slide">
           <Image src={product.imageUrl} width={520} height={480} alt="" />
           <footer>
@@ -42,6 +48,7 @@ export default function Home({products}: HomeProps) {
          )
       })}
     </HomeContainer>
+    </>
   );
 }
 
@@ -51,7 +58,15 @@ export const getStaticProps: GetStaticProps = async () => {
   })
 
   const products = response.data.map((product) => {
+    
     const price = product.default_price as Stripe.Price
+     if (!price || price.unit_amount === null) {
+    // Trate o caso em que price ou price.unit_amount é null
+    return {
+      notFound: true, // ou outra lógica adequada ao seu caso
+    };
+  }
+
     return {
       id: product.id,
       name: product.name,
