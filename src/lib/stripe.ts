@@ -1,8 +1,12 @@
-import Stripe from 'stripe'
+import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'default_secret_key', {
-  apiVersion: '2023-10-16',
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("A chave secreta do Stripe não está definida.");
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2023-10-16",
   appInfo: {
-    name: 'Ignaite Shop'
+    name: 'Ignite Shop',
   }
-})
+});
