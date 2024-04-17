@@ -1,4 +1,4 @@
-import { HomeContainer, Product } from "@/styles/pages/home";
+import { CartButton, HomeContainer, Product } from "@/styles/pages/home";
 import Image from "next/image";
 import Head from "next/head";
 
@@ -9,6 +9,8 @@ import {useKeenSlider} from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
 import Stripe from "stripe";
 import Link from "next/link";
+
+import BagCarrosel from '../assets/BagCarrosel.svg'
 
 interface HomeProps {
   products: {
@@ -24,7 +26,8 @@ export default function Home({products}: HomeProps) {
     slides: {
       perView: 3,
       spacing: 48,
-    }
+    },
+
   })
 
   return (
@@ -36,12 +39,17 @@ export default function Home({products}: HomeProps) {
       <HomeContainer ref={sliderRef} className="keen-slider">
       {products.map((product) => {
         return (
-      <Link  key={product.id}  href={`/product/${product.id}`} prefetch={false}  >
+      <Link  key={product.id}  href={`/product/${product.id}`} prefetch={false}>
         <Product className="keen-slider__slide">
           <Image src={product.imageUrl} width={520} height={480} alt="" />
           <footer>
+           <div>
             <strong>{product.name}</strong>
             <span>{product.price}</span>
+           </div>
+           <CartButton>
+            <Image src={BagCarrosel} alt="" width={56} height={56} />
+           </CartButton>
           </footer>
         </Product>
       </Link>

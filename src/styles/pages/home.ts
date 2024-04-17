@@ -5,7 +5,7 @@ export const HomeContainer = styled('main', {
   width: '100%',
   maxWidth: 'calc(100vw - ((100vw - 1180px) / 2))',
   marginLeft: 'auto',
-  minHeight: 656
+  minHeight: 550,
 })
 
 export const Product = styled('div', {
@@ -33,8 +33,13 @@ export const Product = styled('div', {
     borderRadius: 6,
 
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'space-between',
+
+    div: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexDirection: 'column',
+    },
 
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
 
@@ -60,4 +65,11 @@ export const Product = styled('div', {
       opacity: 1
     }
   }
+});
+
+export const CartButton = styled('button', {
+  backgroundColor: 'transparent',
+  border: 'none',
+  outline: 'none',
+  cursor: 'pointer',
 })

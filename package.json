@@ -10,12 +10,17 @@
   },
   "dependencies": {
     "@stitches/react": "^1.2.8",
+    "@types/styled-components": "^5.1.34",
     "axios": "^1.6.8",
     "keen-slider": "^6.8.6",
+    "linaria": "^6.1.0",
     "next": "14.1.4",
+    "next-with-linaria": "^0.7.0",
     "react": "^18",
     "react-dom": "^18",
-    "stripe": "^14.25.0"
+    "react-icons": "^5.1.0",
+    "stripe": "^14.25.0",
+    "styled-components": "^6.1.8"
   },
   "devDependencies": {
     "@types/node": "^20",
