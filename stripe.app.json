@@ -1,0 +1,7 @@
+{
+  "id": "com.example.app",
+  "version": "0.0.1",
+  "name": "Your Stripe App",
+  "distribution_type": "public",
+  "permissions": []
+}
