@@ -1,5 +1,6 @@
 import { Html, Head, Main, NextScript } from 'next/document'
 import { getCssText } from '../styles'
+import { BagContextProvider } from '@/contexts/BagContext'
 
 export default function Document() {
   return (
@@ -12,8 +13,10 @@ export default function Document() {
         <style id="stitches" dangerouslySetInnerHTML={{ __html: getCssText() }} />
       </Head>
       <body>
+        <BagContextProvider>
         <Main />
         <NextScript />
+        </BagContextProvider>
       </body>
     </Html>
   )

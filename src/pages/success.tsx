@@ -63,7 +63,9 @@ export const getServerSideProps: GetServerSideProps = async ({ query, params }) 
     const customerName = session.customer_details ? session.customer_details.name : 'Cliente';
 
     // Verifica se session.line_items é null
-    const product = session.line_items ? session.line_items.data[0].price.product as Stripe.Product : null;
+    const product = session.line_items && session.line_items.data.length > 0 
+  ? session.line_items.data[0].price.product as Stripe.Product 
+  : null;
 
     // Verifica se product é null antes de acessar suas propriedades
     const productName = product ? product.name : 'Produto';
