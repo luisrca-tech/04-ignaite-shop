@@ -8,6 +8,10 @@ export const HomeContainer = styled('main', {
   minHeight: 550,
 })
 
+export const CardContainer = styled('div', {
+  display: 'flex',
+})
+
 export const Product = styled('div', {
   background: 'linear-gradient(180deg, #1ea483 0%, #7465d4 100%)',
   borderRadius: 8,

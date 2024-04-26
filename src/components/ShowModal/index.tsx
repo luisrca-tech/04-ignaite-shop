@@ -1,4 +1,6 @@
-import { useContext, useEffect, useState } from "react";
+"use client"
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -26,8 +28,8 @@ import LogoImg from '../../assets/logo.svg'
 import BagHeader from '../../assets/Bag.svg'
 import CloseIcon from '../../assets/CloseIcon.svg'
 
-import { BagContext, BagContextProvider, ProductProps } from "@/contexts/BagContext";
 import { useBag } from "@/Hooks/useBag";
+import { ProductsProps } from "@/contexts/BagContext";
 
 interface ModalProps {
   children: any
@@ -35,37 +37,43 @@ interface ModalProps {
 
 export function ShowModal({ children }: ModalProps) {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const { bag, orders } = useBag();
-  const [ProductsInBag, setProductsInBag] = useState<ProductProps[]>(orders);
+  const { bag, removeFromCart, product } = useBag();
 
-  useEffect(() => {
-    const updatedProductsInBag = bag?.map((item) => {
-      const productInfo = orders.find((product) => product.id === item.id);
+  const productsInBag = bag?.map((item) => {
+    const productInfo = bag.find((product) => product.id === item.id);
 
-      if (!productInfo) {
-        throw new Error('Invalid Product.');
-      }
+    if (!productInfo) {
+      throw new Error('Invalid Product')
+    }
 
-      return {
-        ...productInfo,
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        imageUrl: item.imageUrl
-      };
-    });
+    return {
+      ...productInfo,
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      imageUrl: item.imageUrl,
+    }
+  });
 
-    setProductsInBag(updatedProductsInBag || []);
-    console.log(bag, orders);
-  }, [bag, orders]);
-  
+  function handleRemoveFromCart(product: ProductsProps) {
+    const isProductToRemove = bag.filter((item) => item.id !== product.id);
+
+    if (isProductToRemove) {
+      removeFromCart(product)
+    }
+  }
+
+  const totalProductsPrice = productsInBag.reduce((total, currentProduct) => {
+    return total + parseFloat(currentProduct.price);
+  }, 0);
+
   const handleMenu = () => {
     setShowModal((current) => !current);
   };
 
   return (
-    <BagContextProvider>
-      <SidebarContainer isShow={showModal} >
+    <>
+      <SidebarContainer isShow={showModal}>
         <CloseContainer>
           <button onClick={() => setShowModal(false)}>
             <Image src={CloseIcon} alt=""/>
@@ -78,15 +86,24 @@ export function ShowModal({ children }: ModalProps) {
             </strong>
           </SidebarHeader>
           <ProductsContainer>
-            {bag.map((item) => (
-              <Product key={item.id}>
+            {productsInBag.map((product) => (
+              <Product key={product.id}>
                 <ImageContainer>
-                  <Image src={item.imageUrl} alt="" width={94} height={94} />
+                  <Image src={product.imageUrl} alt="" width={94} height={94} />
                 </ImageContainer>
                 <ProductContent>
-                  <span>{item.name}</span>
-                  <strong>{item.price}</strong>
-                  <button>Remover</button>
+                  <span>{product.name}</span>
+                  <strong>
+                    {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                    }).format(parseFloat(product.price))}
+                  </strong>
+                  <button 
+                   onClick={() => handleRemoveFromCart(product)}
+                  >
+                    Remover
+                  </button>
                 </ProductContent>
               </Product>
             ))}
@@ -97,15 +114,18 @@ export function ShowModal({ children }: ModalProps) {
                 Quantidade
               </p>
               <span>
-                3 itens
+                {bag.length} itens
               </span>
             </ItemsLenght>
             <TotalShopping>
               <strong>
                 Valor total
               </strong>
-              <span>
-                R$ 270,00
+              <span> 
+                {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+                }).format(totalProductsPrice)}
               </span>
             </TotalShopping>
             <FinalizeButton>
@@ -126,12 +146,12 @@ export function ShowModal({ children }: ModalProps) {
               <Image src={BagHeader} alt="" width={56} height={56} />
             </CartButton>
             <ItemsLenghtSpan>
-              <span>0</span>
+              <span>{bag.length}</span>
             </ItemsLenghtSpan>
           </MenuButtonContainer>
         </HeaderContainer>
         {children}
       </Container>
-    </BagContextProvider>
+    </>
   );
 }
