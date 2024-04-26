@@ -1,58 +1,88 @@
-import { createContext, ReactNode, useEffect, useState } from "react";
-import { GetStaticProps } from "next";
-import Stripe from "stripe";
+  import { createContext, ReactNode, useEffect, useState } from "react";
 
-export interface ProductProps {
-  id: string;
-  name: string;
-  imageUrl: string;
-  price: string;
-  description?: string | null;
-  defaultPriceId?: string;
-  notFound?: boolean; // Opcional, pois alguns produtos podem não ser encontrados
-}
+  export interface ProductsProps {
+      id: string;
+      name: string;
+      imageUrl: string;
+      price: string;
+      defaultPriceId: string,
+    }
 
-interface BagContextTypes {
-  products?: ProductProps[]; // Agora é opcional, pois pode estar vazio inicialmente
-  bag: ProductProps[];
-  orders: ProductProps[];
-  addToCart: (product: ProductProps) => void;
-  setProducts: (products: ProductProps[]) => void;
-}
+  export interface ProductProps {
+      product: {
+        id: string,
+        name: string,
+        imageUrl: string,
+        price: string,
+        description: string,
+        defaultPriceId: string,
+        quantity: number,
+      }
+    }
 
-export const BagContext = createContext({} as BagContextTypes);
 
-interface BagContextProviderProps {
-  children: ReactNode;
-}
+  interface BagContextTypes {
+    products?: ProductsProps[];
+    product?: ProductsProps[];
+    bag: ProductsProps[];
+    addToCart: (product: ProductsProps) => void;
+    setProducts: (products: ProductsProps[]) => void;
+    setProduct: (product: ProductsProps[]) => void;
+    removeFromCart: (product: ProductsProps) => void;
+  }
 
-export function BagContextProvider({ children }: BagContextProviderProps) {
-  const [productsList, setProductsList] = useState<ProductProps[]>([]);
-  const [orders, setOrders] = useState(productsList)
-  const [bag, setBag] = useState(orders);
-  
-  const setProducts = (products: ProductProps[]) => {
-    setProductsList(products);
-  };
-   
-   const addToCart = (product: ProductProps) => {
-    setBag((prevBag) => [...prevBag, product]);
-    setOrders((prevOrder) => [...prevOrder, product])
-  };
+  export const BagContext = createContext({} as BagContextTypes);
 
-  useEffect(() => {
-    console.log(bag, orders);
-  }, [bag, orders])
+  interface BagContextProviderProps {
+    children: ReactNode;
+  }
 
-  return (
-    <BagContext.Provider value={{ 
-      addToCart, 
-      bag, 
-      orders,
-      products: productsList, 
-      setProducts, 
-      }}>
-      {children}
-    </BagContext.Provider>
-  );
-}
+  export function BagContextProvider({ children }: BagContextProviderProps) {
+    const [productsList, setProductsList] = useState<ProductsProps[]>([]);
+    const [productList, setProductList] = useState<ProductsProps[]>([]);
+    const [bag, setBag] = useState<ProductsProps[]>([]);
+
+    
+    const setProducts = (products: ProductsProps[]) => {
+      setProductsList(products);
+    };
+
+    const setProduct = (product: ProductsProps[]) => {
+      setProductList(product)
+    }
+    
+    const addToCart = (product: ProductsProps) => {
+      setBag((prevBag) => [...prevBag, product]);
+    };
+
+    useEffect(() => {
+      console.log(bag);
+    }, [bag])
+    
+
+  const removeFromCart = (product: ProductsProps) => {
+      setBag((prevBag) => prevBag.filter((item) => item.id !== product.id))
+    }
+
+    useEffect(() => {
+      if (productsList) {
+      const stateJSON = JSON.stringify(productsList)
+
+      localStorage.setItem('@coffee-delivery:cart-state-1.0.0', stateJSON)
+      }
+    }, [productsList])
+
+    return (
+      <BagContext.Provider value={{ 
+        addToCart, 
+        removeFromCart,
+        bag, 
+        products: productsList, 
+        setProducts,
+        product: productList,
+        setProduct,
+        }}>
+        {children}
+      </BagContext.Provider>
+    );
+  }

@@ -53,10 +53,10 @@ type SidebarContainerType = {
 export const SidebarContainer = styled("div", {
   padding: "1.5rem",
   display: "flex",
-  maxWidth: '100vh',
+  maxWidth: '100vw',
   width: "40vw",
   flexDirection: "column",
-  height: "100vh",
+  minHeight: "100vh",
   backgroundColor: "$gray800",
   zIndex: 9999,
   position: "absolute",
@@ -73,7 +73,6 @@ export const SidebarContainer = styled("div", {
 
 export const CloseContainer = styled('div', {
   width: '100%',
-  padding: '1.5rem 0',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'end',
@@ -83,6 +82,7 @@ export const CloseContainer = styled('div', {
     outline: 'none',
     border: 'none',
     cursor: 'pointer',
+    margin: '-1.2rem 0',
   }
 });
 
@@ -151,7 +151,6 @@ export const FooterContainer = styled('div', {
   display: 'flex',
   flexDirection: 'column',
 
-  marginTop: '2.5rem'
 })
 
 export const ItemsLenght = styled('div', {

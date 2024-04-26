@@ -1,48 +1,55 @@
 "use client"
 
-import { BagContext } from "@/contexts/BagContext"
+import { useBag } from "@/Hooks/useBag"
+import { ProductProps } from "@/contexts/BagContext"
 import { stripe } from "@/lib/stripe"
 import { ImageContainer, ProductContainer, ProductDetails } from "@/styles/pages/product"
 import axios from "axios"
 import { GetStaticPaths, GetStaticProps } from "next"
 import Head from "next/head"
 import Image from "next/image"
-import { useContext, useState } from "react"
+import { useEffect, useState } from "react"
 import Stripe from "stripe"
-
-interface ProductProps {
-  product: {
-    id: string,
-    name: string,
-    imageUrl: string,
-    price: string,
-    description: string,
-    defaultPriceId: string,
-  }
-}
 
 export default function Product({ product }: ProductProps) {
   const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false);
+  const {bag, addToCart} = useBag()
 
-  async function handleBuyProduct() {
-    try {
-      setIsCreatingCheckoutSession(true)
+async function handleBuyProduct() {
+  try {
+    setIsCreatingCheckoutSession(true);
+
+    const lineItems = bag.map((product) => ({
+      defaultPriceId: product.defaultPriceId,
+      quantity: 1 // Ou outra lógica para definir a quantidade
+    }));
 
     const response = await axios.post('/api/checkout', {
-      priceId: product.defaultPriceId
-    })
+      line_items: lineItems
+    });
 
-    const { checkoutUrl } = response.data
+    const { checkoutUrl } = response.data;
 
-      window.location.href = checkoutUrl
-    } catch (error) {
-      // Conectar com uma ferramente de observabilidade (Datadog / Sentry)
+    window.location.href = checkoutUrl;
+  } catch (err) {
+    setIsCreatingCheckoutSession(false);
+    alert('Falha ao redirecionar ao checkout!');
+  }
+}
 
-      setIsCreatingCheckoutSession(false)
+  function handleAddToCart(product: ProductProps["product"]) {
+    const isProductInBag = bag.some((item) => item.id === product.id);
 
-      alert('Falha ao redirecionar ao checkout!')
+    if (!isProductInBag) {
+      const productWitchPriceId = {
+        ...product,
+        defaultPriceId: product.defaultPriceId
+      };
+
+      addToCart(productWitchPriceId)
     }
   }
+
 
   return (
     <>
@@ -57,10 +64,13 @@ export default function Product({ product }: ProductProps) {
 
     <ProductDetails>
       <h1>{product.name}</h1>
-      <span>{product.price}</span>
+      <span>{ new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(parseFloat(product.price))}</span>
       <p>{product.description}</p>
 
-      <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
+      <button onClick={handleBuyProduct}>
         Colocar na sacola
       </button>
     </ProductDetails>
@@ -107,10 +117,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
         id: product.id,
         name: product.name,
         imageUrl: product.images[0],
-        price: new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        }).format(price.unit_amount / 100),
+        price: (price.unit_amount / 100),
         description: product.description,
         defaultPriceId: price.id,
       }
