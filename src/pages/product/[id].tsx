@@ -1,70 +1,57 @@
 "use client"
 
+import { useBag } from "@/Hooks/useBag"
+import { ProductsProps } from "@/contexts/BagContext"
 import { stripe } from "@/lib/stripe"
 import { ImageContainer, ProductContainer, ProductDetails } from "@/styles/pages/product"
-import axios from "axios"
 import { GetStaticPaths, GetStaticProps } from "next"
 import Head from "next/head"
 import Image from "next/image"
-import { useState } from "react"
 import Stripe from "stripe"
 
-interface ProductProps {
-  product: {
-    id: string,
-    name: string,
-    imageUrl: string,
-    price: string,
-    description: string,
-    defaultPriceId: string,
-  }
-}
+export default function Product({ product }: ProductsProps) {
+  const {bag, addToCart } = useBag()
+  
 
-export default function Product({ product }: ProductProps) {
-  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
+  function handleAddToCart(product: ProductsProps) {
+    const isProductInBag = bag.some((item) => item.product.id === product.product.id);
 
-  async function handleBuyProduct() {
-    try {
-      setIsCreatingCheckoutSession(true)
+    if (!isProductInBag) {
+      const productWitchPriceId = {
+        ...product,
+        defaultPriceId: product.product.defaultPriceId
+      };
 
-    const response = await axios.post('/api/checkout', {
-      priceId: product.defaultPriceId
-    })
-
-    const { checkoutUrl } = response.data
-
-      window.location.href = checkoutUrl
-    } catch (error) {
-      // Conectar com uma ferramente de observabilidade (Datadog / Sentry)
-
-      setIsCreatingCheckoutSession(false)
-
-      alert('Falha ao redirecionar ao checkout!')
+      addToCart(productWitchPriceId)
     }
   }
 
+
   return (
-    <>
+  <>
       <Head>
         <title>{product.name} | Ignaite Shop</title>
       </Head>
       
-       <ProductContainer>
-    <ImageContainer>
-      <Image src={product.imageUrl} alt="" width={520} height={480} />
-    </ImageContainer>
+    <ProductContainer>
+      <ImageContainer>
+        <Image src={product.imageUrl} alt="" width={520} height={520} />
+      </ImageContainer>
 
-    <ProductDetails>
-      <h1>{product.name}</h1>
-      <span>{product.price}</span>
-      <p>{product.description}</p>
+      <ProductDetails>
+        <h1>{product.name}</h1>
+        <span>{ new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+          }).format(parseFloat(product.price))}</span>
+        <p>{product.description}</p>
 
-      <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
-        Comprar Agora
-      </button>
-    </ProductDetails>
+        <button onClick={() => handleAddToCart({product})}>
+          Colocar na sacola
+        </button>
+      </ProductDetails>
    </ProductContainer>
-    </>
+  </>
   )
 }
 
@@ -81,9 +68,8 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
   const productId = params?.id;
 
   if (!productId) {
-    // Trate o caso em que params é undefined
     return {
-      notFound: true, // ou outra lógica adequada ao seu caso
+      notFound: true, 
     };
   }
 
@@ -94,9 +80,8 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
   const price = product.default_price as Stripe.Price;
 
   if (!price || price.unit_amount === null) {
-    // Trate o caso em que price ou price.unit_amount é null
     return {
-      notFound: true, // ou outra lógica adequada ao seu caso
+      notFound: true,
     };
   }
 
@@ -106,10 +91,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
         id: product.id,
         name: product.name,
         imageUrl: product.images[0],
-        price: new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        }).format(price.unit_amount / 100),
+        price: (price.unit_amount / 100),
         description: product.description,
         defaultPriceId: price.id,
       }
