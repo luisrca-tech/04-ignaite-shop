@@ -9,19 +9,38 @@ export const Container = styled('div', {
   paddingBottom: '4rem',
 })
 
+type HeaderProps = {
+  isSuccessPage: boolean,
+}
+
 export const HeaderContainer = styled('header', {
   padding: '2rem 0',
   width: '100%',
   maxWidth: 1180,
   margin: '0 auto',
   display: 'flex',
-  justifyContent: 'space-between',
-});
+
+  variants: {
+    isSuccessPage: {
+      true: { justifyContent: 'center' },
+      false: { justifyContent: 'space-between' },
+    }
+  }
+
+})<HeaderProps>;
 
 export const MenuButtonContainer = styled('div', {
   display: 'flex',
   background: '$gray900',
-})
+
+  variants: {
+    isSuccessPage: {
+      true: { display: 'none' },
+      false: { display: 'flex' },
+    }
+  }
+
+})<HeaderProps>;
 
 export const CartButton = styled('button', {
     backgroundColor: '$gray800',
@@ -68,6 +87,10 @@ export const SidebarContainer = styled("div", {
       true: { bottom: "0" }, 
       false: { bottom: "100vh"},
     },
+    isSuccessPage: {
+      true: { display: 'none' },
+      false: { display: 'flex' }
+    }
   },
 })<SidebarContainerType>;
 
@@ -83,6 +106,16 @@ export const CloseContainer = styled('div', {
     border: 'none',
     cursor: 'pointer',
     margin: '-1.2rem 0',
+
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+
+  '&:not(:disabled):hover': {
+    backgroundColor: '$green300',
+  },
+  
   }
 });
 
