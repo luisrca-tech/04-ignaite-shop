@@ -1,4 +1,4 @@
-import { CardContainer, CartButton, HomeContainer, Product } from "@/styles/pages/home";
+import { CartButton, HomeContainer, Product } from "@/styles/pages/home";
 import Image from "next/image";
 import Head from "next/head";
 
@@ -15,17 +15,11 @@ import { useBag } from "@/Hooks/useBag";
 import { ProductsProps } from "@/contexts/BagContext";
 import { useEffect } from "react";
 
-interface HomeProps {
-  products: {
-    id: string,
-    name: string,
-    imageUrl: string,
-    price: string,
-    defaultPriceId: string,
-  }[]
+export interface ProductWithProductProps {
+  products: ProductsProps[];
 }
 
-export default function Home({ products }: HomeProps) {
+export default function Home({ products }: ProductWithProductProps) {
   const { setProducts, addToCart, bag } = useBag();
 
   useEffect(() => {
@@ -40,7 +34,7 @@ export default function Home({ products }: HomeProps) {
   });
 
   function handleAddToCart(product: ProductsProps) {
-    const isProductInBag = bag.some((item) => item.id === product.id);
+    const isProductInBag = bag.some((item) => item.product.id === product.product.id);
 
     if (!isProductInBag) {
       addToCart(product);
@@ -55,18 +49,18 @@ export default function Home({ products }: HomeProps) {
 
       <HomeContainer ref={sliderRef} className="keen-slider">
         {products.map((product) => (
-          <Product key={product.id} className="keen-slider__slide">
-            <Link href={`/product/${product.id}`} prefetch={false}>
-              <Image src={product.imageUrl} width={520} height={480} alt="" />
+          <Product key={product.product.id} className="keen-slider__slide">
+            <Link href={`/product/${product.product.id}`} prefetch={false}>
+              <Image src={product.product.imageUrl} width={520} height={480} alt="" />
             </Link>
             <footer>
               <div>
-                <strong>{product.name}</strong>
+                <strong>{product.product.name}</strong>
                 <span> 
                   {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
-                  }).format(parseFloat(product.price))}
+                  }).format(parseFloat(product.product.price))}
                 </span>
               </div>
               <CartButton onClick={(e) => handleAddToCart(product)}>
@@ -90,17 +84,19 @@ export const getStaticProps: GetStaticProps = async () => {
 
     const price = product.default_price as Stripe.Price
     if (!price || price.unit_amount === null) {
-      // Trate o caso em que price ou price.unit_amount é null
       return {
-        notFound: true, // ou outra lógica adequada ao seu caso
+        notFound: true,
       };
     }
 
     return {
+      product: {
       id: product.id,
       name: product.name,
       imageUrl: product.images[0],
-      price: (price.unit_amount / 100)
+      price: (price.unit_amount / 100),
+      defaultPriceId: price.id,
+      }
     }
   })
 

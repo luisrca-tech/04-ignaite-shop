@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,40 +31,26 @@ import CloseIcon from '../../assets/CloseIcon.svg'
 import { useBag } from "@/Hooks/useBag";
 import { ProductsProps } from "@/contexts/BagContext";
 
-interface ModalProps {
-  children: any
+interface ShowModalProps {
+  product: ProductsProps,
+  children: ReactNode,
+  isSuccessPage: boolean,
 }
 
-export function ShowModal({ children }: ModalProps) {
+export function ShowModal({ product, children, isSuccessPage }: ShowModalProps) {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const { bag, removeFromCart, product } = useBag();
-
-  const productsInBag = bag?.map((item) => {
-    const productInfo = bag.find((product) => product.id === item.id);
-
-    if (!productInfo) {
-      throw new Error('Invalid Product')
-    }
-
-    return {
-      ...productInfo,
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      imageUrl: item.imageUrl,
-    }
-  });
+  const { bag, removeFromCart, handleBuyProduct, isCreatingCheckoutSession } = useBag();
 
   function handleRemoveFromCart(product: ProductsProps) {
-    const isProductToRemove = bag.filter((item) => item.id !== product.id);
+    const isProductToRemove = bag.filter((item) =>  item.product.id !== product.product.id);
 
     if (isProductToRemove) {
       removeFromCart(product)
     }
   }
 
-  const totalProductsPrice = productsInBag.reduce((total, currentProduct) => {
-    return total + parseFloat(currentProduct.price);
+  const totalProductsPrice = bag?.reduce((total, currentProduct) => {
+    return total + parseFloat(currentProduct.product.price);
   }, 0);
 
   const handleMenu = () => {
@@ -73,7 +59,7 @@ export function ShowModal({ children }: ModalProps) {
 
   return (
     <>
-      <SidebarContainer isShow={showModal}>
+      <SidebarContainer isShow={showModal} isSuccessPage={isSuccessPage}>
         <CloseContainer>
           <button onClick={() => setShowModal(false)}>
             <Image src={CloseIcon} alt=""/>
@@ -86,18 +72,18 @@ export function ShowModal({ children }: ModalProps) {
             </strong>
           </SidebarHeader>
           <ProductsContainer>
-            {productsInBag.map((product) => (
-              <Product key={product.id}>
+            {bag.map((product) => (
+              <Product key={product.product.id}>
                 <ImageContainer>
-                  <Image src={product.imageUrl} alt="" width={94} height={94} />
+                  <Image src={product.product.imageUrl} alt="" width={94} height={94} />
                 </ImageContainer>
                 <ProductContent>
-                  <span>{product.name}</span>
+                  <span>{product.product.name}</span>
                   <strong>
                     {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
-                    }).format(parseFloat(product.price))}
+                    }).format(parseFloat(product.product.price))}
                   </strong>
                   <button 
                    onClick={() => handleRemoveFromCart(product)}
@@ -129,7 +115,7 @@ export function ShowModal({ children }: ModalProps) {
               </span>
             </TotalShopping>
             <FinalizeButton>
-              <button>
+              <button disabled={isCreatingCheckoutSession} onClick={() => handleBuyProduct(product)}>
                 Finalizar Compra
               </button>
             </FinalizeButton>
@@ -137,11 +123,11 @@ export function ShowModal({ children }: ModalProps) {
         </SidebarContent>
       </SidebarContainer>
       <Container>
-        <HeaderContainer>
+        <HeaderContainer isSuccessPage={isSuccessPage}>
           <Link href='/'>
             <Image src={LogoImg} width={126.56} height={52} alt=""/>
           </Link>
-          <MenuButtonContainer>
+          <MenuButtonContainer isSuccessPage={isSuccessPage} >
             <CartButton onClick={handleMenu}>
               <Image src={BagHeader} alt="" width={56} height={56} />
             </CartButton>
