@@ -106,16 +106,6 @@ export const CloseContainer = styled('div', {
     border: 'none',
     cursor: 'pointer',
     margin: '-1.2rem 0',
-
-  '&:disabled': {
-    opacity: 0.6,
-    cursor: 'not-allowed',
-  },
-
-  '&:not(:disabled):hover': {
-    backgroundColor: '$green300',
-  },
-  
   }
 });
 
@@ -243,5 +233,15 @@ export const FinalizeButton = styled('div', {
   fontSize: '1rem',
   fontWeight: 'bold',
   lineHeight: '160%',
+  
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+
+  '&:not(:disabled):hover': {
+    backgroundColor: '$green300',
+  },
+
 }
 })
